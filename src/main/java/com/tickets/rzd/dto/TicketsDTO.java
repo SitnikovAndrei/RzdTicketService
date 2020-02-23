@@ -35,12 +35,20 @@ public class TicketsDTO implements Serializable {
         private String timeInWay;
         private float flMsk;
         private float train_id;
-        List<Object> serviceCategories = new ArrayList <> ();
+        private List<ServiceCategoriesDTO> serviceCategories;
         private boolean nonRefundable;
         private boolean msr;
 
+        public List<ServiceCategoriesDTO> getServiceCategories() {
+            return serviceCategories;
+        }
 
-        // Getter Methods
+        public void setServiceCategories(List<ServiceCategoriesDTO> serviceCategories) {
+            this.serviceCategories = serviceCategories;
+        }
+
+
+    // Getter Methods
 
         public String getNumber() {
             return number;
