@@ -1,5 +1,6 @@
 package com.tickets.rzd.controller;
 
+import com.tickets.rzd.dto.TicketsDTO;
 import com.tickets.rzd.service.RzdRestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -16,7 +17,7 @@ public class TestController {
     private RzdRestService rzdRestService;
 
     @GetMapping("/test/{period}")
-    public List<String> getTest(@PathVariable int period) throws Exception{
+    public List<TicketsDTO> getTest(@PathVariable int period) throws Exception{
         return rzdRestService.getTicketsByPeriod(period);
     }
 

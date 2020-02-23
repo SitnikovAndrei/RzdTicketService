@@ -79,15 +79,4 @@ public class TicketEntity {
         this.price = price;
     }
 
-//    @Override
-//    public String toString() {
-//        return "TicketEntity{" +
-//                "id=" + id +
-//                ", brand='" + brand + '\'' +
-//                ", number='" + number + '\'' +
-//                ", dateFrom=" + dateFrom +
-//                ", dateTo=" + dateTo +
-//                ", price=" + price +
-//                '}';
-//    }
 }
