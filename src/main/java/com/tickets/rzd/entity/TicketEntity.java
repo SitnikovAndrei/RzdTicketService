@@ -9,10 +9,8 @@ import java.util.Date;
 @Table(name = "tickets", schema = "public")
 public class TicketEntity {
 
-    protected TicketEntity() {}
-
     @Id
-    @GeneratedValue(strategy= GenerationType.SEQUENCE)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Integer id;
 
     private String brand;

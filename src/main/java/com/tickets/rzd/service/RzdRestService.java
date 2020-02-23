@@ -1,7 +1,9 @@
 package com.tickets.rzd.service;
 
 import com.google.gson.*;
-import com.tickets.rzd.dto.TicketsDTO;
+import com.tickets.rzd.dto.ServiceCategoriesDTO;
+import com.tickets.rzd.dto.TicketDTO;
+import com.tickets.rzd.entity.TicketEntity;
 import com.tickets.rzd.utils.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -39,10 +43,10 @@ public class RzdRestService {
         return dateNow.getListDateByPeriod(period);
     }
 
-    public List<TicketsDTO> getTicketsByPeriod(int period) {
+    public List<TicketEntity> getTicketsByPeriod(int period) {
         Executor executor = Executors.newFixedThreadPool(100);
         Date dateNow = new Date();
-        List<CompletableFuture<List<TicketsDTO>>> listCompletableFuture = new ArrayList<>();
+        List<CompletableFuture<List<TicketDTO>>> listCompletableFuture = new ArrayList<>();
         List<String> dateList = dateNow.getListDateByPeriod(period);
 
         for (String date : dateList){
@@ -59,10 +63,11 @@ public class RzdRestService {
         return listCompletableFuture.stream()
                 .map(CompletableFuture::join)
                 .flatMap(Collection::stream)
+                .map(this::toEntity)
                 .collect(Collectors.toList());
     }
 
-    public Optional<List<TicketsDTO>> getTickets(String date) throws InterruptedException {
+    public Optional<List<TicketDTO>> getTickets(String date) throws InterruptedException {
         logger.info("TICKETS BY PERIOD: date {}", date);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -87,9 +92,34 @@ public class RzdRestService {
         return Optional.empty();
     }
 
-    private Optional<List<TicketsDTO>> toDTO(JsonObject response) {
+    private List<TicketEntity> toEntity(List<TicketDTO> ticketsDTO) throws ParseException {
+        return ticketsDTO.stream().map(this::toEntity).collect(Collectors.toList());
+    }
+
+    private TicketEntity toEntity(TicketDTO ticketDTO) {
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+
+        TicketEntity ticketEntity = new TicketEntity();
+        ticketEntity.setBrand(ticketDTO.getBrand());
+        try {
+            ticketEntity.setDateFrom(format.parse( ticketDTO.getDate0() + " " + ticketDTO.getTime0()));
+            ticketEntity.setDateTo(format.parse( ticketDTO.getDate1() + " " + ticketDTO.getTime1()));
+        } catch (ParseException e) {
+            logger.error("ERROR PARSE DATE TicketDTO", e);
+        }
+        ticketEntity.setNumber(ticketDTO.getNumber());
+        ticketEntity.setPrice(ticketDTO.getServiceCategories()
+                .stream()
+                .map(ServiceCategoriesDTO::getPrice)
+                .mapToInt(Integer::parseInt)
+                .min().orElse(10000));
+
+        return ticketEntity;
+    };
+
+    private Optional<List<TicketDTO>> toDTO(JsonObject response) {
         Gson gson = new GsonBuilder().create();
-        List<TicketsDTO> tickets = new ArrayList<>();
+        List<TicketDTO> tickets = new ArrayList<>();
 
         try {
             JsonArray ticketsList = response.get("tp")
@@ -101,7 +131,7 @@ public class RzdRestService {
 
             logger.info("Response tickets |  tickets size: {}", ticketsList.size());
             for (int i = 0; i < ticketsList.size(); i++) {
-                tickets.add(gson.fromJson(ticketsList.get(i).toString(), TicketsDTO.class));
+                tickets.add(gson.fromJson(ticketsList.get(i).toString(), TicketDTO.class));
             }
         } catch (Exception e) {
             logger.error("ERROR PARSE TICKETS JSON", e);

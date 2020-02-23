@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TicketsDTO implements Serializable {
+public class TicketDTO implements Serializable {
         private String number;
         private String number2;
         private float type;

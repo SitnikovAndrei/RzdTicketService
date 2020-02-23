@@ -1,6 +1,7 @@
 package com.tickets.rzd.controller;
 
-import com.tickets.rzd.dto.TicketsDTO;
+import com.tickets.rzd.entity.TicketEntity;
+import com.tickets.rzd.repository.TicketsRepository;
 import com.tickets.rzd.service.RzdRestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -14,10 +15,21 @@ import java.util.List;
 @RestController
 public class TestController {
     @Autowired
+    private TicketsRepository repository;
+
+    @Autowired
     private RzdRestService rzdRestService;
 
-    @GetMapping("/test/{period}")
-    public List<TicketsDTO> getTest(@PathVariable int period) throws Exception{
+    @GetMapping("/tickets/update")
+    public ResponseEntity<?> ticketsUpdate() throws Exception{
+        repository.deleteAll();
+        List<TicketEntity> ticketEntityList = rzdRestService.getTicketsByPeriod(30);
+        repository.saveAll(ticketEntityList);
+        return ResponseEntity.ok("TRUE");
+    }
+
+    @GetMapping("/tickets/period/{period}")
+    public List<TicketEntity> getTicketsByPeriod(@PathVariable int period) throws Exception{
         return rzdRestService.getTicketsByPeriod(period);
     }
 
