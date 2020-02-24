@@ -1,7 +1,7 @@
 package com.tickets.rzd.service;
 
-import com.google.gson.*;
-import com.tickets.rzd.dto.ServiceCategoriesDTO;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.tickets.rzd.dto.TicketDTO;
 import com.tickets.rzd.entity.TicketEntity;
 import com.tickets.rzd.utils.Date;
@@ -16,7 +16,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -28,6 +27,9 @@ public class RzdRestService {
     private Logger logger = LoggerFactory.getLogger(RzdRestService.class);
 
     private final String URI_TICKETS = "https://pass.rzd.ru/timetable/public/ru?layer_id=5827";
+
+    @Autowired
+    private TicketsMapper mapper;
 
     @Autowired
     private ApplicationContext context;
@@ -63,7 +65,7 @@ public class RzdRestService {
         return listCompletableFuture.stream()
                 .map(CompletableFuture::join)
                 .flatMap(Collection::stream)
-                .map(this::toEntity)
+                .map(mapper::toEntity)
                 .collect(Collectors.toList());
     }
 
@@ -85,60 +87,11 @@ public class RzdRestService {
         body.add("actorType","desktop_2016");
 
         Optional<JsonObject> response = wok(headers, body);
-        if (response.isPresent()) {
-            return toDTO(response.get());
-        }
-
-        return Optional.empty();
+        return response.map(jsonObject -> mapper.toDTO(jsonObject));
     }
 
     private List<TicketEntity> toEntity(List<TicketDTO> ticketsDTO) throws ParseException {
-        return ticketsDTO.stream().map(this::toEntity).collect(Collectors.toList());
-    }
-
-    private TicketEntity toEntity(TicketDTO ticketDTO) {
-        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-
-        TicketEntity ticketEntity = new TicketEntity();
-        ticketEntity.setBrand(ticketDTO.getBrand());
-        try {
-            ticketEntity.setDateFrom(format.parse( ticketDTO.getDate0() + " " + ticketDTO.getTime0()));
-            ticketEntity.setDateTo(format.parse( ticketDTO.getDate1() + " " + ticketDTO.getTime1()));
-        } catch (ParseException e) {
-            logger.error("ERROR PARSE DATE TicketDTO", e);
-        }
-        ticketEntity.setNumber(ticketDTO.getNumber());
-        ticketEntity.setPrice(ticketDTO.getServiceCategories()
-                .stream()
-                .map(ServiceCategoriesDTO::getPrice)
-                .mapToInt(Integer::parseInt)
-                .min().orElse(10000));
-
-        return ticketEntity;
-    };
-
-    private Optional<List<TicketDTO>> toDTO(JsonObject response) {
-        Gson gson = new GsonBuilder().create();
-        List<TicketDTO> tickets = new ArrayList<>();
-
-        try {
-            JsonArray ticketsList = response.get("tp")
-                    .getAsJsonArray()
-                    .get(0)
-                    .getAsJsonObject()
-                    .get("list")
-                    .getAsJsonArray();
-
-            logger.info("Response tickets |  tickets size: {}", ticketsList.size());
-            for (int i = 0; i < ticketsList.size(); i++) {
-                tickets.add(gson.fromJson(ticketsList.get(i).toString(), TicketDTO.class));
-            }
-        } catch (Exception e) {
-            logger.error("ERROR PARSE TICKETS JSON", e);
-            return Optional.empty();
-        }
-
-        return Optional.of(tickets);
+        return ticketsDTO.stream().map(mapper::toEntity).collect(Collectors.toList());
     }
 
     private Optional<JsonObject> wok(HttpHeaders headers, MultiValueMap<String, String> body) throws InterruptedException {
@@ -151,7 +104,7 @@ public class RzdRestService {
 
 
         if (result.equals("OK")){
-            return Optional.ofNullable(responseBody);
+            return Optional.of(responseBody);
         } else if (result.equals("RID")) {
             Thread.sleep(1000);
             Map<String, String> uniqCookies = cookieParser(responseHeaders.get(HttpHeaders.SET_COOKIE));
