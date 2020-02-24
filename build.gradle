@@ -1,21 +1,23 @@
+buildscript {
+	repositories {
+		jcenter()
+	}
+
+	dependencies {
+		classpath 'com.bmuschko:gradle-cargo-plugin:2.7.1'
+	}
+}
+
 plugins {
 	id 'org.springframework.boot' version '2.2.4.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
 	id 'war'
+	id "com.bmuschko.cargo" version "2.7.1"
 }
 
 repositories {
 	mavenCentral()
-}
-
-group = 'com.tickets'
-version = '0.0.2'
-sourceCompatibility = '1.8'
-
-bootWar {
-	archiveFileName = 'rzd.war'
-	mainClassName = 'com.rzd.RzdApplication'
 }
 
 dependencies {
@@ -27,6 +29,32 @@ dependencies {
 //	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 //		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 //	}
+}
+
+group = 'com.tickets'
+version = '0.0.2'
+sourceCompatibility = '1.8'
+
+bootWar {
+	archiveFileName = 'rzd.war'
+	mainClassName = 'com.rzd.RzdApplication'
+}
+
+
+cargo {
+	containerId = 'tomcat8x'
+	port = 8080
+
+	deployable {
+		file = file('/build/libs/rzd.war')
+	}
+
+	remote {
+		protocol = 'http'
+		hostname = 'xxx'
+		username = 'xxx'
+		password = 'xxx'
+	}
 }
 
 test {
