@@ -54,7 +54,16 @@ public class RzdRestService {
         for (String date : dateList){
             listCompletableFuture.add(CompletableFuture.supplyAsync(() -> {
                 try {
-                    return getTickets(date).orElse(null);
+                    return getTickets(date, "2000000", "2060001").orElse(null);
+                } catch (InterruptedException e) {
+                    logger.error("GET TICKETS BY DATE ERROR", e);
+                }
+                return null;
+            }, executor));
+
+            listCompletableFuture.add(CompletableFuture.supplyAsync(() -> {
+                try {
+                    return getTickets(date, "2060001", "2000000").orElse(null);
                 } catch (InterruptedException e) {
                     logger.error("GET TICKETS BY DATE ERROR", e);
                 }
@@ -69,7 +78,7 @@ public class RzdRestService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<List<TicketDTO>> getTickets(String date) throws InterruptedException {
+    public Optional<List<TicketDTO>> getTickets(String date, String code0, String code1) throws InterruptedException {
         logger.info("TICKETS BY PERIOD: date {}", date);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -78,8 +87,8 @@ public class RzdRestService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("dir","0");
         body.add("tfl","3");
-        body.add("code0","2000000");
-        body.add("code1","2060001");
+        body.add("code0",code0);
+        body.add("code1",code1);
         body.add("dt0", date);
         body.add("checkSeats","1");
         body.add("md","0");

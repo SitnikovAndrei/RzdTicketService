@@ -17,6 +17,12 @@ public class TicketEntity {
 
     private String number;
 
+    @Column(name = "city_from")
+    private String cityFrom;
+
+    @Column(name = "city_to")
+    private String cityTo;
+
     @Basic
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_from")
@@ -77,4 +83,19 @@ public class TicketEntity {
         this.price = price;
     }
 
+    public String getCityFrom() {
+        return cityFrom;
+    }
+
+    public void setCityFrom(String cityFrom) {
+        this.cityFrom = cityFrom;
+    }
+
+    public String getCityTo() {
+        return cityTo;
+    }
+
+    public void setCityTo(String cityTo) {
+        this.cityTo = cityTo;
+    }
 }

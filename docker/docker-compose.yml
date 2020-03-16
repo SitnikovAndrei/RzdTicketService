@@ -10,14 +10,17 @@ services:
       POSTGRES_PASSWORD: xxxxxx
     ports:
       - 5432:5432
+    container_name: db
 
   adminer:
     image: adminer
     restart: always
     ports:
       - 8085:8080
+    container_name: adminer
 
   tomcat_server:
     build: tomcat/
     ports:
       - 8080:8080
+    container_name: tomcat_server

@@ -35,7 +35,7 @@ public class RzdController {
 
     @GetMapping(value = "/tickets/date/{date}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getTicketsByDate(@PathVariable String date) throws Exception{
-        return ResponseEntity.ok(rzdRestService.getTickets(date));
+        return ResponseEntity.ok(rzdRestService.getTickets(date, "2000000", "2060001"));
     }
 
 }

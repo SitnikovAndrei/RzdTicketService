@@ -46,6 +46,8 @@ class TicketsMapper {
 
         TicketEntity ticketEntity = new TicketEntity();
         ticketEntity.setBrand(ticketDTO.getBrand());
+        ticketEntity.setCityFrom(ticketDTO.getRoute0());
+        ticketEntity.setCityTo(ticketDTO.getRoute1());
         try {
             ticketEntity.setDateFrom(format.parse( ticketDTO.getDate0() + " " + ticketDTO.getTime0()));
             ticketEntity.setDateTo(format.parse( ticketDTO.getDate1() + " " + ticketDTO.getTime1()));
