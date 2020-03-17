@@ -74,6 +74,7 @@ public class RzdRestService {
         return listCompletableFuture.stream()
                 .map(CompletableFuture::join)
                 .flatMap(Collection::stream)
+                .filter(it -> "ЛАСТОЧКА".equals(it.getBrand()) || "СТРИЖ".equals(it.getBrand()))
                 .map(mapper::toEntity)
                 .collect(Collectors.toList());
     }
